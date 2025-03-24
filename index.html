@@ -99,6 +99,7 @@
     .result {
       margin-top: 20px;
       text-align: center;
+      display: none; /* Sembunyikan hasil secara default */
     }
 
     .result h2 {
@@ -126,6 +127,76 @@
     }
 
     .result a:hover {
+      background: #e04343;
+    }
+
+    /* Dialog Styles */
+    .dialog-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeInOverlay 0.3s ease-in-out;
+    }
+
+    @keyframes fadeInOverlay {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .dialog {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      max-width: 300px;
+      width: 90%;
+      animation: zoomIn 0.3s ease-in-out;
+    }
+
+    @keyframes zoomIn {
+      from {
+        transform: scale(0.8);
+      }
+      to {
+        transform: scale(1);
+      }
+    }
+
+    .dialog h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: #ff4c4c;
+    }
+
+    .dialog p {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .dialog button {
+      padding: 8px 16px;
+      background: #ff4c4c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .dialog button:hover {
       background: #e04343;
     }
 
@@ -164,6 +235,17 @@
   </style>
 </head>
 <body>
+  <!-- Dialog Invalid URL -->
+  <div class="dialog-overlay" id="invalid-url-dialog" style="display: none;">
+    <div class="dialog">
+      <h2>Invalid URL!</h2>
+      <p>
+        URL TikTok yang Anda masukkan tidak valid. Silakan cek kembali dan coba lagi.
+      </p>
+      <button onclick="closeInvalidUrlDialog()">Mengerti</button>
+    </div>
+  </div>
+
   <header>
     <h1>TikTok Downloader</h1>
   </header>
@@ -174,7 +256,7 @@
       <button id="download-btn">Download</button>
     </div>
 
-    <div class="result" id="result" style="display: none;">
+    <div class="result" id="result">
       <h2>Download Result</h2>
       <video controls id="video-preview">
         Your browser does not support the video tag.
@@ -200,13 +282,23 @@
       return match ? match[1] : null;
     }
 
+    // Tampilkan dialog invalid URL
+    function showInvalidUrlDialog() {
+      document.getElementById('invalid-url-dialog').style.display = 'flex';
+    }
+
+    // Tutup dialog invalid URL
+    function closeInvalidUrlDialog() {
+      document.getElementById('invalid-url-dialog').style.display = 'none';
+    }
+
     // Fungsi untuk memulai proses download
     async function startDownload() {
       const videoUrl = document.getElementById('video-url').value;
       const videoId = extractVideoId(videoUrl);
 
       if (!videoId) {
-        alert('Invalid TikTok URL. Please enter a valid link.');
+        showInvalidUrlDialog(); // Tampilkan dialog invalid URL
         return;
       }
 
@@ -226,7 +318,7 @@
           const downloadLink = document.getElementById('download-link');
           const resultSection = document.getElementById('result');
 
-          // Tampilkan video preview
+          // Tampilkan hasil
           videoPreview.src = data.data.play;
           downloadLink.href = data.data.play;
           resultSection.style.display = 'block';
