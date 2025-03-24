@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Downloader - Download TikTok Videos</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    header {
+      background: #000;
+      color: #fff;
+      padding: 20px 0;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #ff4c4c;
+    }
+
+    /* Main Content */
+    main {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #1a1a1a;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Search Box */
+    .search-box {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .search-box input {
+      width: 70%;
+      padding: 12px;
+      border: 2px solid #333;
+      border-radius: 5px;
+      font-size: 1rem;
+      margin-right: 10px;
+      background: #333;
+      color: #fff;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .search-box input:focus {
+      border-color: #ff4c4c;
+      box-shadow: 0 0 8px rgba(255, 76, 76, 0.5);
+      outline: none;
+    }
+
+    .search-box button {
+      padding: 12px 24px;
+      background: #ff4c4c;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .search-box button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(255, 76, 76, 0.3);
+    }
+
+    /* Result Section */
+    .result {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .result h2 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: #ff4c4c;
+    }
+
+    .result video {
+      width: 100%;
+      max-width: 400px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .result a {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #ff4c4c;
+      color: white;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .result a:hover {
+      background: #e04343;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 40px;
+      padding: 20px;
+      background: #000;
+      color: white;
+      text-align: center;
+      box-shadow: 0 -4px 6px rgba(255, 255, 255, 0.1);
+    }
+
+    footer strong {
+      font-size: 1.1rem;
+      color: #ff4c4c;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .search-box {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .search-box input {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+      }
+
+      .search-box button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TikTok Downloader</h1>
+  </header>
+
+  <main>
+    <div class="search-box">
+      <input type="text" id="video-url" placeholder="Paste TikTok video link here...">
+      <button id="download-btn">Download</button>
+    </div>
+
+    <div class="result" id="result" style="display: none;">
+      <h2>Download Result</h2>
+      <video controls id="video-preview">
+        Your browser does not support the video tag.
+      </video>
+      <a id="download-link" href="#" target="_blank">Download Video</a>
+    </div>
+  </main>
+
+  <footer>
+    <p><strong>MADE BY AB.IQQQ</strong></p>
+  </footer>
+
+  <script>
+    // API Configuration
+    const API_KEY = 'b12950bd2dmsh08b04fe17d08a2ep1e8d0djsnf03fab6e09c4'; // Ganti dengan API Key Anda
+    const API_HOST = 'tiktok-video-no-watermark2.p.rapidapi.com';
+    const API_URL = 'https://tiktok-video-no-watermark2.p.rapidapi.com/';
+
+    // Fungsi untuk mengekstrak ID video dari URL TikTok
+    function extractVideoId(url) {
+      const regex = /https:\/\/www\.tiktok\.com\/@.+\/video\/(\d+)/;
+      const match = url.match(regex);
+      return match ? match[1] : null;
+    }
+
+    // Fungsi untuk memulai proses download
+    async function startDownload() {
+      const videoUrl = document.getElementById('video-url').value;
+      const videoId = extractVideoId(videoUrl);
+
+      if (!videoId) {
+        alert('Invalid TikTok URL. Please enter a valid link.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}video/info?video_id=${videoId}`, {
+          method: 'GET',
+          headers: {
+            'X-RapidAPI-Key': API_KEY,
+            'X-RapidAPI-Host': API_HOST,
+          },
+        });
+
+        const data = await response.json();
+
+        if (data.data && data.data.play) {
+          const videoPreview = document.getElementById('video-preview');
+          const downloadLink = document.getElementById('download-link');
+          const resultSection = document.getElementById('result');
+
+          // Tampilkan video preview
+          videoPreview.src = data.data.play;
+          downloadLink.href = data.data.play;
+          resultSection.style.display = 'block';
+        } else {
+          alert('Error: Video not found.');
+        }
+      } catch (error) {
+        alert('An error occurred. Please try again.');
+        console.error(error);
+      }
+    }
+
+    // Event listener untuk tombol "Download"
+    document.getElementById('download-btn').addEventListener('click', startDownload);
+  </script>
+</body>
+</html>
