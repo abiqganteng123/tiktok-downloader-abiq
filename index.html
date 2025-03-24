@@ -275,8 +275,26 @@
     const API_HOST = 'tiktok-video-no-watermark2.p.rapidapi.com';
     const API_URL = 'https://tiktok-video-no-watermark2.p.rapidapi.com/';
 
-    // Fungsi untuk mengekstrak ID video dari URL TikTok
-    function extractVideoId(url) {
+    // Fungsi untuk mengubah URL pendek TikTok menjadi URL lengkap
+    async function resolveShortUrl(shortUrl) {
+      try {
+        const response = await fetch(shortUrl, { method: 'HEAD', redirect: 'follow' });
+        return response.url; // Mengembalikan URL lengkap setelah redirect
+      } catch (error) {
+        console.error('Error resolving short URL:', error);
+        return null;
+      }
+    }
+
+    // Fungsi untuk mengekstrak Video ID dari URL TikTok
+    async function extractVideoId(url) {
+      // Jika URL adalah URL pendek (vm.tiktok.com), ubah menjadi URL lengkap
+      if (url.includes('vm.tiktok.com')) {
+        url = await resolveShortUrl(url);
+        if (!url) return null;
+      }
+
+      // Ekstrak Video ID dari URL lengkap
       const regex = /https:\/\/www\.tiktok\.com\/@.+\/video\/(\d+)/;
       const match = url.match(regex);
       return match ? match[1] : null;
@@ -295,7 +313,7 @@
     // Fungsi untuk memulai proses download
     async function startDownload() {
       const videoUrl = document.getElementById('video-url').value;
-      const videoId = extractVideoId(videoUrl);
+      const videoId = await extractVideoId(videoUrl);
 
       if (!videoId) {
         showInvalidUrlDialog(); // Tampilkan dialog invalid URL
